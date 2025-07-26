@@ -1,4 +1,6 @@
 using EventAPI.Data;
+using EventAPI.Repositories;
+using EventAPI.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +15,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<EventDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<IEventRepository, EventRepository>();
 
 var app = builder.Build();
 
