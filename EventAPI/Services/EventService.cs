@@ -11,7 +11,7 @@ namespace EventAPI.Services
             _eventRepository = eventRepository;
         }
         public async Task<Event> CreateAsync(Event newEvent)
-        {
+        {//Generata iD
             return await _eventRepository.CreateAsync(newEvent);
         }
 

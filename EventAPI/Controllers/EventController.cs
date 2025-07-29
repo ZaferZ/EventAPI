@@ -16,13 +16,13 @@ namespace EventAPI.Controllers
             _eventService = eventService;
         }
 
-        [HttpGet("GetAllEvents")]
+        [HttpGet("")]
         public async Task<ActionResult<IEnumerable<Event>>> GetAllEvents()
         {
             var events = await _eventService.GetAllAsync();
             return Ok(events);
         }
-        [HttpGet("GetEventById/{id}")]
+        [HttpGet("{id}")]
         public async Task<ActionResult<Event>> GetEventById(Guid id)
         {
             try
@@ -36,7 +36,7 @@ namespace EventAPI.Controllers
             }
         }
 
-        [HttpPost("CreateEvent")]
+        [HttpPost]
         public async Task<ActionResult<Event>> CreateEvent([FromBody] Event newEvent)
         {
             if (newEvent == null)
@@ -47,7 +47,7 @@ namespace EventAPI.Controllers
             return CreatedAtAction(nameof(GetEventById), new { id = createdEvent.Id }, createdEvent);
         }
 
-        [HttpPut("UpdateEvent/{id}")]
+        [HttpPatch("{id}")]
         public async Task<ActionResult<Event>> UpdateEvent(Guid id, [FromBody] Event updatedEvent)
         {
             if (updatedEvent == null || updatedEvent.Id != id)
@@ -64,7 +64,7 @@ namespace EventAPI.Controllers
                 return NotFound($"Event with ID {id} not found.");
             }
         }
-        [HttpDelete("DeleteEvent/{id}")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEvent(Guid id)
         {
             try
