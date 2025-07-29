@@ -5,9 +5,9 @@ namespace EventAPI.Services
     public interface IEventService
     {
         Task<IEnumerable<Event>> GetAllAsync();
-        Task<Event> GetByIdAsync(Guid id);
-        Task<Event> CreateAsync(Event newEvent);
-        Task<Event> UpdateAsync(Event newEvent);
+        Task<Event> GetByIdAsync(int id);
+        Task<Event> CreateAsync(EventCreateDTO newEvent);
+        Task<Event> UpdateAsync(EventUpdateDTO newEvent);
         Task DeleteAsync(Event newEvent);
     }
 }
