@@ -25,7 +25,7 @@ namespace EventAPI.Repositories
         }
 
 
-        public async Task<Event> GetByIdAsync(Guid id)  
+        public async Task<Event> GetByIdAsync(int id)  
         {
             return await _context.Events.FindAsync(id) 
                    ?? throw new KeyNotFoundException($"Event with ID {id} not found.");

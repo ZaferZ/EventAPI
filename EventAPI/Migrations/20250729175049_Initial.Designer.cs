@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EventAPI.Migrations
 {
     [DbContext(typeof(EventDbContext))]
-    [Migration("20250725215119_Initial")]
+    [Migration("20250729175049_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -27,9 +27,11 @@ namespace EventAPI.Migrations
 
             modelBuilder.Entity("EventAPI.Models.Event", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Capacity")
                         .HasColumnType("int");
@@ -47,8 +49,8 @@ namespace EventAPI.Migrations
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("HobbyId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("HobbyId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Location")
                         .IsRequired()

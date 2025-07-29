@@ -1,8 +1,9 @@
-﻿using EventAPI.Data;
+﻿
 using EventAPI.Models;
 using EventAPI.Services;
+using Mapster;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace EventAPI.Controllers
 {
@@ -11,33 +12,37 @@ namespace EventAPI.Controllers
     public class EventController : ControllerBase
     {
         private readonly IEventService _eventService;
+
         public EventController(IEventService eventService)
         {
             _eventService = eventService;
         }
 
         [HttpGet("")]
-        public async Task<ActionResult<IEnumerable<Event>>> GetAllEvents()
+        public async Task<ActionResult<IEnumerable<EventGetDTO>>> GetAllEvents()
         {
             var events = await _eventService.GetAllAsync();
-            return Ok(events);
+            var response = events.ToList().Adapt<List<EventGetDTO>>();
+          
+            return Ok(response);
         }
         [HttpGet("{id}")]
-        public async Task<ActionResult<Event>> GetEventById(Guid id)
+        public async Task<ActionResult<EventGetDTO>> GetEventById(int id)
         {
             try
             {
                 var eventItem = await _eventService.GetByIdAsync(id);
-                return Ok(eventItem);
+                var response = eventItem.Adapt<EventGetDTO>();
+                return Ok(response);
             }
-            catch (KeyNotFoundException)
+            catch (KeyNotFoundException)     
             {
                 return NotFound($"Event with ID {id} not found.");
             }
         }
 
         [HttpPost]
-        public async Task<ActionResult<Event>> CreateEvent([FromBody] Event newEvent)
+        public async Task<ActionResult<EventGetDTO>> CreateEvent([FromBody] EventCreateDTO newEvent)
         {
             if (newEvent == null)
             {
@@ -48,7 +53,7 @@ namespace EventAPI.Controllers
         }
 
         [HttpPatch("{id}")]
-        public async Task<ActionResult<Event>> UpdateEvent(Guid id, [FromBody] Event updatedEvent)
+        public async Task<ActionResult<Event>> UpdateEvent(int id, [FromBody] EventUpdateDTO updatedEvent)
         {
             if (updatedEvent == null || updatedEvent.Id != id)
             {
@@ -65,7 +70,7 @@ namespace EventAPI.Controllers
             }
         }
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteEvent(Guid id)
+        public async Task<IActionResult> DeleteEvent(int id)
         {
             try
             {
@@ -77,6 +82,6 @@ namespace EventAPI.Controllers
             {
                 return NotFound($"Event with ID {id} not found.");
             }
-        }   
+        }
     }
 }
