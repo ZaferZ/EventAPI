@@ -12,33 +12,33 @@ namespace EventAPI.Repositories
            _context = context;
         }
 
-        public async Task<Event> CreateAsync(Event newEvent)
+        public async Task<Event> Create(Event newEvent)
         {
             _context.Events.Add(newEvent);
             await _context.SaveChangesAsync();
             return newEvent;
         }
 
-        public async Task<IEnumerable<Event>> GetAllAsync()
+        public async Task<IEnumerable<Event>> GetAll()
         {
             return await _context.Events.ToListAsync();
         }
 
 
-        public async Task<Event> GetByIdAsync(int id)  
+        public async Task<Event> GetById(int id)  
         {
             return await _context.Events.FindAsync(id) 
                    ?? throw new KeyNotFoundException($"Event with ID {id} not found.");
         }
 
-        public async Task<Event> UpdateAsync(Event newEvent)
+        public async Task<Event> Update(Event newEvent)
         {
             _context.Events.Update(newEvent);
             await _context.SaveChangesAsync();
             return newEvent;
         }
 
-        public async Task DeleteAsync(Event newEvent)
+        public async Task Delete(Event newEvent)
         {
             _context.Events.Remove(newEvent);
             await _context.SaveChangesAsync();

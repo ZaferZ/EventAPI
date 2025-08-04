@@ -1,5 +1,6 @@
 ﻿
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EventAPI.Models
 {
@@ -15,11 +16,13 @@ namespace EventAPI.Models
         [Key]
         public int Id { get; set; }
         [Required]
-        public string Title { get; set; }= string.Empty;
+        public string Title { get; set; } = string.Empty;
         [Required]
         public string Description { get; set; } = string.Empty;
+        [ForeignKey("OwnerId")]
         [Required]
         public Guid OwnerId { get; set; }
+        [ForeignKey("HobbyId")]
         [Required]
         public int HobbyId { get; set; }
         [Required]
@@ -32,13 +35,16 @@ namespace EventAPI.Models
         public int Capacity { get; set; }
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        [ForeignKey("CreatedBy")]
         [Required]
         public Guid CreatedBy { get; set; }
         public DateTime? ModifiedAt { get; set; }
+        [ForeignKey("ModifiedBy")]
         public Guid? ModifiedBy { get; set; }
-        public List<Guid>? ParticipantIds { get; set; } = new();
+        public ICollection<Guid>? ParticipantIds { get; set; } = new List<Guid>();
         [Required]
         public EventStatus Status { get; set; } = EventStatus.Scheduled;
+
 
     }
 }

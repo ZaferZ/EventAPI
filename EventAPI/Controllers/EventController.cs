@@ -1,4 +1,5 @@
 ﻿
+using Azure;
 using EventAPI.Models;
 using EventAPI.Services;
 using Mapster;
@@ -21,18 +22,17 @@ namespace EventAPI.Controllers
         [HttpGet("")]
         public async Task<ActionResult<IEnumerable<EventGetDTO>>> GetAllEvents()
         {
-            var events = await _eventService.GetAllAsync();
-            var response = events.ToList().Adapt<List<EventGetDTO>>();
-          
+            var response = await _eventService.GetAll();
+
             return Ok(response);
         }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<EventGetDTO>> GetEventById(int id)
         {
             try
             {
-                var eventItem = await _eventService.GetByIdAsync(id);
-                var response = eventItem.Adapt<EventGetDTO>();
+                var response = await _eventService.GetById(id);
                 return Ok(response);
             }
             catch (KeyNotFoundException)     
@@ -48,7 +48,7 @@ namespace EventAPI.Controllers
             {
                 return BadRequest("Event data is null.");
             }
-            var createdEvent = await _eventService.CreateAsync(newEvent);
+            var createdEvent = await _eventService.Create(newEvent);
             return CreatedAtAction(nameof(GetEventById), new { id = createdEvent.Id }, createdEvent);
         }
 
@@ -61,7 +61,7 @@ namespace EventAPI.Controllers
             }
             try
             {
-                var result = await _eventService.UpdateAsync(updatedEvent);
+                var result = await _eventService.Update(updatedEvent);
                 return Ok(result);
             }
             catch (KeyNotFoundException)
@@ -69,13 +69,14 @@ namespace EventAPI.Controllers
                 return NotFound($"Event with ID {id} not found.");
             }
         }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEvent(int id)
         {
             try
             {
-                Event eventToDelete = await _eventService.GetByIdAsync(id);
-                await _eventService.DeleteAsync(eventToDelete);
+                Event eventToDelete = await _eventService.GetById(id);
+                await _eventService.Delete(eventToDelete);
                 return NoContent();
             }
             catch (KeyNotFoundException)
