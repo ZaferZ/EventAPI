@@ -4,10 +4,10 @@ namespace EventAPI.Services
 {
     public interface IEventService
     {
-        Task<IEnumerable<Event>> GetAllAsync();
-        Task<Event> GetByIdAsync(int id);
-        Task<Event> CreateAsync(EventCreateDTO newEvent);
-        Task<Event> UpdateAsync(EventUpdateDTO newEvent);
-        Task DeleteAsync(Event newEvent);
+        Task<IEnumerable<EventGetDTO>> GetAll();
+        Task<Event> GetById(int id);
+        Task<Event> Create(EventCreateDTO newEvent);
+        Task<Event> Update(EventUpdateDTO newEvent);
+        Task Delete(Event newEvent);
     }
 }
