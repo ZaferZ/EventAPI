@@ -1,9 +1,11 @@
 using EventAPI.Data;
 using EventAPI.Repositories;
 using EventAPI.Services;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 
@@ -29,27 +31,37 @@ builder.Services.AddScoped<IEventRepository, EventRepository>();
 
 // Register the JWT service
 var appSettingsSection = builder.Configuration.GetSection("AppSettings");
-var secretKey = appSettingsSection.GetValue<string>("Token");
+var secret = appSettingsSection.GetValue<string>("Token");
 var issuer = appSettingsSection.GetValue<string>("Issuer");
 var audience = appSettingsSection.GetValue<string>("Audience");
+var key = Convert.FromBase64String(secret);
+List<string> audiences = new List<string>();
+audiences.Add(audience);
 
-builder.Services.AddAuthentication(options =>
+builder.Services.AddAuthentication(x =>
 {
-    options.DefaultAuthenticateScheme = "Bearer";
-    options.DefaultChallengeScheme = "Bearer";
-}).AddJwtBearer("Bearer", options =>
-{
-    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-    {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(secretKey)),
-        ValidateIssuer = true,
-        ValidIssuer = issuer,
-        ValidateAudience = true,
-        ValidAudience = audience,
-        ValidateLifetime = true,
-    };
-});
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+          .AddJwtBearer(x =>
+          {
+              x.RequireHttpsMetadata = false;
+              x.SaveToken = true;
+              x.TokenValidationParameters = new TokenValidationParameters
+              {
+                  ValidateIssuerSigningKey = false,
+                  IssuerSigningKey = new SymmetricSecurityKey(key),
+
+                  ValidateIssuer = false,
+                  ValidIssuer = issuer,
+
+                  ValidateAudience = false,
+                  ValidAudiences = audiences,
+
+                  ValidateLifetime = false,
+              };
+
+          });
 
 builder.Services.AddAuthorization();
 
@@ -64,6 +76,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
