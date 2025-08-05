@@ -5,6 +5,7 @@ using EventAPI.Services;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace EventAPI.Controllers
 {
@@ -44,11 +45,18 @@ namespace EventAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<EventGetDTO>> CreateEvent([FromBody] EventCreateDTO newEvent)
         {
-            if (newEvent == null)
-            {
-                return BadRequest("Event data is null.");
-            }
+            //var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            //if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out Guid userGuid))
+            //{
+            //    return Unauthorized("User ID is not available.");
+            //}
+            //if (newEvent == null)
+            //{
+            //    return BadRequest("Event data is null.");
+            //}
             var createdEvent = await _eventService.Create(newEvent);
+
+
             return CreatedAtAction(nameof(GetEventById), new { id = createdEvent.Id }, createdEvent);
         }
 

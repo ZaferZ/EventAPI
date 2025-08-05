@@ -1,7 +1,6 @@
 ﻿using EventAPI.Models;
 using EventAPI.Repositories;
 using Mapster;
-using Microsoft.Extensions.Logging;
 
 namespace EventAPI.Services
 {
@@ -14,10 +13,11 @@ namespace EventAPI.Services
         }
         public async Task<Event> Create(EventCreateDTO newEvent)
         {
+
             TypeAdapterConfig<EventCreateDTO, Event>.NewConfig()
                 .Map(d => d.Id, s => 0)
                 .Map(d => d.CreatedAt, s => DateTime.UtcNow)
-                .Map(d => d.CreatedBy, s => new Guid()); // add the logged user id here
+                .Map(d => d.CreatedBy, s => new Guid("7E61F925-B7D6-4E69-BBC2-A6695E2E424F")); // add the logged user id here
 
             var eventEntity = newEvent.Adapt<Event>();
 
@@ -47,8 +47,10 @@ namespace EventAPI.Services
         public async Task<Event> Update(EventUpdateDTO newEvent)
         {
             TypeAdapterConfig<EventUpdateDTO, Event>.NewConfig()
-               .Map(d => d.ModifiedAt, s => DateTime.UtcNow)
-               .Map(d => d.ModifiedBy, s => new Guid());// add the logged user id here
+                .Map(d => d.ModifiedAt, s => DateTime.UtcNow)
+                .Map(d => d.ModifiedBy, s => new Guid("7E61F925-B7D6-4E69-BBC2-A6695E2E424F"))   // add the logged user id here
+                .Map(d => d.CreatedBy, s => new Guid("7E61F925-B7D6-4E69-BBC2-A6695E2E424F"));  // add the logged user id here
+
 
             var eventEntity = newEvent.Adapt<Event>();
 
