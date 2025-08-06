@@ -1,6 +1,9 @@
 using EventAPI.Data;
 using EventAPI.Repositories;
 using EventAPI.Services;
+using EventAPI.Validators;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +26,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+//Add FluentValidation
+builder.Services.AddValidatorsFromAssemblyContaining<EventValidator>();
+builder.Services.AddFluentValidationAutoValidation();
+
 builder.Services.AddDbContext<EventDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -35,8 +42,10 @@ var secret = appSettingsSection.GetValue<string>("Token");
 var issuer = appSettingsSection.GetValue<string>("Issuer");
 var audience = appSettingsSection.GetValue<string>("Audience");
 var key = Convert.FromBase64String(secret);
-List<string> audiences = new List<string>();
-audiences.Add(audience);
+var audiences = new List<string>
+{
+    audience
+};
 
 builder.Services.AddAuthentication(x =>
 {

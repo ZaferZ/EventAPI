@@ -16,10 +16,7 @@ namespace EventAPI.Controllers
     {
         private readonly IEventService _eventService;
 
-        public EventController(IEventService eventService)
-        {
-            _eventService = eventService;
-        }
+        public EventController(IEventService eventService) => _eventService = eventService;
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EventGetDTO>>> GetAllEvents()
@@ -99,7 +96,8 @@ namespace EventAPI.Controllers
             //{
             //    return Unauthorized("User ID is not available.");
             //}
-
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
             if (newEvent == null)
             {
