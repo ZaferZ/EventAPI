@@ -87,15 +87,15 @@ namespace EventAPI.Controllers
             }
         }
 
-        [Authorize(Roles ="admin")]
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<EventGetDTO>> CreateEvent([FromBody] EventCreateDTO newEvent)
         {
-            //var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            //if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out Guid userGuid))
-            //{
-            //    return Unauthorized("User ID is not available.");
-            //}
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out Guid userGuid))
+            {
+                return Unauthorized("User ID is not available.");
+            }
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
@@ -103,22 +103,24 @@ namespace EventAPI.Controllers
             {
                 return BadRequest("Event data is null.");
             }
-            var createdEvent = await _eventService.Create(newEvent);
+            var createdEvent = await _eventService.Create(newEvent,new Guid(userId));
 
 
             return CreatedAtAction(nameof(GetEventById), new { id = createdEvent.Id }, createdEvent);
         }
 
+        [Authorize]
         [HttpPatch("{id}")]
         public async Task<ActionResult<Event>> UpdateEvent(int id, [FromBody] EventUpdateDTO updatedEvent)
         {
+            var userId = new Guid(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
             if (updatedEvent == null || updatedEvent.Id != id)
             {
                 return BadRequest("Event data is invalid.");
             }
             try
             {
-                var result = await _eventService.Update(updatedEvent);
+                var result = await _eventService.Update(updatedEvent,userId);
                 return Ok(result);
             }
             catch (KeyNotFoundException)

@@ -27,7 +27,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 //Add FluentValidation
-builder.Services.AddValidatorsFromAssemblyContaining<EventValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<EventCreateValidator>();
 builder.Services.AddFluentValidationAutoValidation();
 
 builder.Services.AddDbContext<EventDbContext>(options =>
