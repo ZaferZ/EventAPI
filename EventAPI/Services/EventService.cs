@@ -27,9 +27,8 @@ namespace EventAPI.Services
 
         public async Task<Event> GetById(int id)
         {
-            var events = await _eventRepository.GetAll();
-            var response = events.Adapt<List<EventGetDTO>>();
-            return await _eventRepository.GetById(id);
+            var events = await _eventRepository.GetById(id);
+            return events;
         }
 
         public async Task<Event> Create(EventCreateDTO newEvent)
