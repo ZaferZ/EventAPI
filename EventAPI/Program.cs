@@ -1,9 +1,14 @@
 using EventAPI.Data;
 using EventAPI.Repositories;
 using EventAPI.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
-using EventAPI.Models;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+
+
 
 
 
@@ -24,6 +29,42 @@ builder.Services.AddDbContext<EventDbContext>(options =>
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 
+// Register the JWT service
+var appSettingsSection = builder.Configuration.GetSection("AppSettings");
+var secret = appSettingsSection.GetValue<string>("Token");
+var issuer = appSettingsSection.GetValue<string>("Issuer");
+var audience = appSettingsSection.GetValue<string>("Audience");
+var key = Convert.FromBase64String(secret);
+List<string> audiences = new List<string>();
+audiences.Add(audience);
+
+builder.Services.AddAuthentication(x =>
+{
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+          .AddJwtBearer(x =>
+          {
+              x.RequireHttpsMetadata = false;
+              x.SaveToken = true;
+              x.TokenValidationParameters = new TokenValidationParameters
+              {
+                  ValidateIssuerSigningKey = false,
+                  IssuerSigningKey = new SymmetricSecurityKey(key),
+
+                  ValidateIssuer = false,
+                  ValidIssuer = issuer,
+
+                  ValidateAudience = false,
+                  ValidAudiences = audiences,
+
+                  ValidateLifetime = false,
+              };
+
+          });
+
+builder.Services.AddAuthorization();
+
 
 var app = builder.Build();
 
@@ -35,6 +76,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

@@ -11,6 +11,27 @@ namespace EventAPI.Services
         {
             _eventRepository = eventRepository;
         }
+        public async Task<IEnumerable<EventGetDTO>> GetAll()
+        {
+            var events = await _eventRepository.GetAll();
+            var response = events.Adapt<List<EventGetDTO>>();
+            return response;
+        }
+
+        public async Task<IEnumerable<EventGetDTO>> GetByUserId(Guid userId)
+        {
+            var events = await _eventRepository.GetByUserId(userId);
+            var response = events.Adapt<List<EventGetDTO>>();
+            return response;
+        }
+
+        public async Task<Event> GetById(int id)
+        {
+            var events = await _eventRepository.GetAll();
+            var response = events.Adapt<List<EventGetDTO>>();
+            return await _eventRepository.GetById(id);
+        }
+
         public async Task<Event> Create(EventCreateDTO newEvent)
         {
 
@@ -25,25 +46,6 @@ namespace EventAPI.Services
             return await _eventRepository.Create(eventEntity);
         }
 
-        public async Task Delete(Event newEvent)
-        {
-            await _eventRepository.Delete(newEvent);
-        }
-
-        public async Task<IEnumerable<EventGetDTO>> GetAll()
-        {
-            var events = await _eventRepository.GetAll();
-            var response = events.Adapt<List<EventGetDTO>>();
-            return response;
-        }
-
-        public async Task<Event> GetById(int id)
-        {
-            var events = await _eventRepository.GetAll();
-            var response = events.Adapt<List<EventGetDTO>>();
-            return await _eventRepository.GetById(id);
-        }
-
         public async Task<Event> Update(EventUpdateDTO newEvent)
         {
             TypeAdapterConfig<EventUpdateDTO, Event>.NewConfig()
@@ -56,6 +58,13 @@ namespace EventAPI.Services
 
             return await _eventRepository.Update(eventEntity);
         }
+
+        public async Task Delete(Event newEvent)
+        {
+            await _eventRepository.Delete(newEvent);
+        }
+
+
 
 
     }
