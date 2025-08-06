@@ -17,9 +17,12 @@ namespace EventAPI.Repositories
             return await _context.Events.ToListAsync();
         }
 
-        public Task<IEnumerable<Event>> GetByUserId(Guid userId)
+        public async Task<IEnumerable<Event>> GetByUserId(Guid userId)
         {
-            throw new NotImplementedException();
+            var events = await _context.Events
+                .Where(e => e.CreatedBy == userId || e.OwnerId == userId)
+                .ToListAsync();
+            return events;
         }
 
         public async Task<Event> GetById(int id)

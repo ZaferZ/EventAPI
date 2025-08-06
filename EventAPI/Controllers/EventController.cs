@@ -30,14 +30,10 @@ namespace EventAPI.Controllers
         }
 
         [Authorize(Roles = "user")]
-        [HttpGet("user/{userId}")]
+        [HttpGet("user/{id}")]
         public async Task<ActionResult<IEnumerable<EventGetDTO>>> GetEventsByUserId(Guid id)
         {
-            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out Guid userGuid))
-            {
-                return Unauthorized($"User with {id} ID is not available.");
-            }
+        
             try
             {
                 var response = await _eventService.GetByUserId(id);
@@ -46,6 +42,31 @@ namespace EventAPI.Controllers
             catch (KeyNotFoundException)
             {
                 return NotFound($"Events for user with ID {id} not found.");
+            }
+        }
+
+        [Authorize(Roles = "user")]
+        [HttpGet("myevents")]
+        public async Task<ActionResult<IEnumerable<EventGetDTO>>> GetLoggerEvents()
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            try
+            {
+                if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out Guid userGuid))
+                {
+                    return Unauthorized("User ID is not available.");
+                }
+                if (userId != null)
+                {
+                    var response = await _eventService.GetByUserId(userGuid);
+                    return Ok(response);
+                }
+                return BadRequest("User ID is not valid.");
+
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound($"Events for user with ID {userId} not found.");
             }
         }
 
@@ -73,11 +94,13 @@ namespace EventAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<EventGetDTO>> CreateEvent([FromBody] EventCreateDTO newEvent)
         {
-            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out Guid userGuid))
-            {
-                return Unauthorized("User ID is not available.");
-            }
+            //var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            //if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out Guid userGuid))
+            //{
+            //    return Unauthorized("User ID is not available.");
+            //}
+
+
             if (newEvent == null)
             {
                 return BadRequest("Event data is null.");

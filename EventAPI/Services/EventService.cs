@@ -18,9 +18,11 @@ namespace EventAPI.Services
             return response;
         }
 
-        public Task<IEnumerable<EventGetDTO>> GetByUserId(Guid userId)
+        public async Task<IEnumerable<EventGetDTO>> GetByUserId(Guid userId)
         {
-            return null;
+            var events = await _eventRepository.GetByUserId(userId);
+            var response = events.Adapt<List<EventGetDTO>>();
+            return response;
         }
 
         public async Task<Event> GetById(int id)
