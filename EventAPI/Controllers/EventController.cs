@@ -1,5 +1,6 @@
 ﻿
 using Azure;
+using EventAPI.Helpers;
 using EventAPI.Models;
 using EventAPI.Services;
 using Mapster;
@@ -15,8 +16,13 @@ namespace EventAPI.Controllers
     public class EventController : ControllerBase
     {
         private readonly IEventService _eventService;
+        private readonly IJwtContext _jwtContext;
 
-        public EventController(IEventService eventService) => _eventService = eventService;
+        public EventController(IEventService eventService, IJwtContext jwtContext)
+        {
+            _jwtContext = jwtContext;
+            _eventService = eventService;
+        }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EventGetDTO>>> GetAllEvents()
@@ -26,11 +32,11 @@ namespace EventAPI.Controllers
             return Ok(response);
         }
 
-        [Authorize(Roles = "user")]
+        [Authorize(Roles = "admin")]
         [HttpGet("user/{id}")]
         public async Task<ActionResult<IEnumerable<EventGetDTO>>> GetEventsByUserId(Guid id)
         {
-        
+
             try
             {
                 var response = await _eventService.GetByUserId(id);
@@ -46,18 +52,15 @@ namespace EventAPI.Controllers
         [HttpGet("myevents")]
         public async Task<ActionResult<IEnumerable<EventGetDTO>>> GetLoggerEvents()
         {
-            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var userId = _jwtContext.UserId;
             try
             {
-                if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out Guid userGuid))
-                {
-                    return Unauthorized("User ID is not available.");
-                }
-                if (userId != null)
-                {
-                    var response = await _eventService.GetByUserId(userGuid);
+
+            
+                    var response = await _eventService.GetByUserId(userId);
+                if (response != null && response.Any())
                     return Ok(response);
-                }
+                
                 return BadRequest("User ID is not valid.");
 
             }
@@ -67,7 +70,7 @@ namespace EventAPI.Controllers
             }
         }
 
-        [Authorize(Roles = "user")]
+        [Authorize(Roles = "user, admin")]
         [HttpGet("{id}")]
         public async Task<ActionResult<EventGetDTO>> GetEventById(int id)
         {
@@ -81,7 +84,7 @@ namespace EventAPI.Controllers
                 var response = await _eventService.GetById(id);
                 return Ok(response);
             }
-            catch (KeyNotFoundException)     
+            catch (KeyNotFoundException)
             {
                 return NotFound($"Event with ID {id} not found.");
             }
@@ -91,11 +94,7 @@ namespace EventAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<EventGetDTO>> CreateEvent([FromBody] EventCreateDTO newEvent)
         {
-            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out Guid userGuid))
-            {
-                return Unauthorized("User ID is not available.");
-            }
+            var userId = _jwtContext.UserId;
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
@@ -103,7 +102,7 @@ namespace EventAPI.Controllers
             {
                 return BadRequest("Event data is null.");
             }
-            var createdEvent = await _eventService.Create(newEvent,new Guid(userId));
+            var createdEvent = await _eventService.Create(newEvent, userId);
 
 
             return CreatedAtAction(nameof(GetEventById), new { id = createdEvent.Id }, createdEvent);
@@ -113,14 +112,14 @@ namespace EventAPI.Controllers
         [HttpPatch("{id}")]
         public async Task<ActionResult<Event>> UpdateEvent(int id, [FromBody] EventUpdateDTO updatedEvent)
         {
-            var userId = new Guid(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
+            var userId = _jwtContext.UserId;
             if (updatedEvent == null || updatedEvent.Id != id)
             {
                 return BadRequest("Event data is invalid.");
             }
             try
             {
-                var result = await _eventService.Update(updatedEvent,userId);
+                var result = await _eventService.Update(updatedEvent, userId);
                 return Ok(result);
             }
             catch (KeyNotFoundException)
@@ -129,12 +128,18 @@ namespace EventAPI.Controllers
             }
         }
 
+        [Authorize(Roles = "admin, user")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEvent(int id)
         {
+            
             try
             {
                 Event eventToDelete = await _eventService.GetById(id);
+                if (eventToDelete.CreatedBy != _jwtContext.UserId && !_jwtContext.Role.Equals("admin", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Forbid("You do not have permission to delete this event.");
+                }
                 await _eventService.Delete(eventToDelete);
                 return NoContent();
             }

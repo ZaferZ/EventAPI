@@ -40,12 +40,9 @@ builder.Services.AddScoped<IEventRepository, EventRepository>();
 var appSettingsSection = builder.Configuration.GetSection("AppSettings");
 var secret = appSettingsSection.GetValue<string>("Token");
 var issuer = appSettingsSection.GetValue<string>("Issuer");
-var audience = appSettingsSection.GetValue<string>("Audience");
+var audience = appSettingsSection.GetValue<List<string>>("Audience");
 var key = Convert.FromBase64String(secret);
-var audiences = new List<string>
-{
-    audience
-};
+
 
 builder.Services.AddAuthentication(x =>
 {
@@ -54,20 +51,20 @@ builder.Services.AddAuthentication(x =>
 })
           .AddJwtBearer(x =>
           {
-              x.RequireHttpsMetadata = false;
+              x.RequireHttpsMetadata = true;
               x.SaveToken = true;
               x.TokenValidationParameters = new TokenValidationParameters
               {
                   ValidateIssuerSigningKey = false,
                   IssuerSigningKey = new SymmetricSecurityKey(key),
 
-                  ValidateIssuer = false,
+                  ValidateIssuer = true,
                   ValidIssuer = issuer,
 
                   ValidateAudience = false,
-                  ValidAudiences = audiences,
+                  ValidAudiences = audience,
 
-                  ValidateLifetime = false,
+                  ValidateLifetime = true,
               };
 
           });

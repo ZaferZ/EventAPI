@@ -1,4 +1,5 @@
-﻿using EventAPI.Models;
+﻿using EventAPI.Helpers;
+using EventAPI.Models;
 using EventAPI.Repositories;
 using Mapster;
 
@@ -6,9 +7,11 @@ namespace EventAPI.Services
 {
     public class EventService : IEventService
     {
+        private readonly IJwtContext _jwtContext;
         private readonly IEventRepository _eventRepository;
         public EventService(IEventRepository eventRepository)
         {
+            _jwtContext = new JwtContext(new HttpContextAccessor());
             _eventRepository = eventRepository;
         }
         public async Task<IEnumerable<EventGetDTO>> GetAll()
