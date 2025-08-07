@@ -1,4 +1,5 @@
 using EventAPI.Data;
+using EventAPI.Helpers;
 using EventAPI.Repositories;
 using EventAPI.Services;
 using EventAPI.Validators;
@@ -29,6 +30,10 @@ builder.Services.AddSwaggerGen();
 //Add FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<EventCreateValidator>();
 builder.Services.AddFluentValidationAutoValidation();
+
+// Add IHttpContextAccessor for JWT context
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IJwtContext, JwtContext>();
 
 builder.Services.AddDbContext<EventDbContext>(options =>
     options.UseSqlServer(
