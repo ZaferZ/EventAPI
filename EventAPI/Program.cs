@@ -1,6 +1,10 @@
 using EventAPI.Data;
+using EventAPI.Helpers;
 using EventAPI.Repositories;
 using EventAPI.Services;
+using EventAPI.Validators;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +27,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+//Add FluentValidation
+builder.Services.AddValidatorsFromAssemblyContaining<EventCreateValidator>();
+builder.Services.AddFluentValidationAutoValidation();
+
+// Add IHttpContextAccessor for JWT context
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IJwtContext, JwtContext>();
+
 builder.Services.AddDbContext<EventDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -33,10 +45,9 @@ builder.Services.AddScoped<IEventRepository, EventRepository>();
 var appSettingsSection = builder.Configuration.GetSection("AppSettings");
 var secret = appSettingsSection.GetValue<string>("Token");
 var issuer = appSettingsSection.GetValue<string>("Issuer");
-var audience = appSettingsSection.GetValue<string>("Audience");
+var audience = appSettingsSection.GetValue<List<string>>("Audience");
 var key = Convert.FromBase64String(secret);
-List<string> audiences = new List<string>();
-audiences.Add(audience);
+
 
 builder.Services.AddAuthentication(x =>
 {
@@ -45,20 +56,20 @@ builder.Services.AddAuthentication(x =>
 })
           .AddJwtBearer(x =>
           {
-              x.RequireHttpsMetadata = false;
+              x.RequireHttpsMetadata = true;
               x.SaveToken = true;
               x.TokenValidationParameters = new TokenValidationParameters
               {
                   ValidateIssuerSigningKey = false,
                   IssuerSigningKey = new SymmetricSecurityKey(key),
 
-                  ValidateIssuer = false,
+                  ValidateIssuer = true,
                   ValidIssuer = issuer,
 
                   ValidateAudience = false,
-                  ValidAudiences = audiences,
+                  ValidAudiences = audience,
 
-                  ValidateLifetime = false,
+                  ValidateLifetime = true,
               };
 
           });

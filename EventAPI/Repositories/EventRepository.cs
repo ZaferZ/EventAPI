@@ -33,6 +33,7 @@ namespace EventAPI.Repositories
 
         public async Task<Event> Create(Event newEvent)
         {
+
             _context.Events.Add(newEvent);
             await _context.SaveChangesAsync();
             return newEvent;
