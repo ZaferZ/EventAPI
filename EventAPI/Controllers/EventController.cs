@@ -56,11 +56,11 @@ namespace EventAPI.Controllers
             try
             {
 
-            
-                    var response = await _eventService.GetByUserId(userId);
+
+                var response = await _eventService.GetByUserId(userId);
                 if (response != null && response.Any())
                     return Ok(response);
-                
+
                 return BadRequest("User ID is not valid.");
 
             }
@@ -89,7 +89,10 @@ namespace EventAPI.Controllers
                 return NotFound($"Event with ID {id} not found.");
             }
         }
-        public async Task<ActionResult<EventGetDTO>> AddParticipcant(int id, Guid participantId)
+
+        [Authorize]
+        [HttpPatch("add/{id}/{participantId}")]
+        public async Task<ActionResult<EventUpdateDTO>> AddParticipcant(int id, Guid participantId)
         {
             var userId = _jwtContext.UserId;
             if (participantId == Guid.Empty)
@@ -99,6 +102,7 @@ namespace EventAPI.Controllers
             try
             {
                 var eventEntity = await _eventService.AddParticipant(id, participantId);
+          
                 if (eventEntity == null)
                 {
                     return NotFound($"Event with ID {id} not found.");
@@ -108,6 +112,37 @@ namespace EventAPI.Controllers
             catch (KeyNotFoundException)
             {
                 return NotFound($"Event with ID {id} not found.");
+            }
+            catch (InvalidOperationException) {
+                return BadRequest("User is already a participant in this event.");
+            }
+        }
+
+        [Authorize]
+        [HttpPatch("remove/{id}/{participantId}")]
+        public async Task<ActionResult<EventGetDTO>> RemoveParticipcant(int id, Guid participantId)
+        {
+            var userId = _jwtContext.UserId;
+            if (participantId == Guid.Empty)
+            {
+                return BadRequest("Participant ID is invalid.");
+            }
+            try
+            {
+                var eventEntity = await _eventService.RemoveParticipant(id, participantId);
+                if (eventEntity == null)
+                {
+                    return NotFound($"Event with ID {id} not found.");
+                }
+                return Ok(eventEntity);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound($"Event with ID {id} not found.");
+            }
+            catch (InvalidOperationException)
+            {
+                return BadRequest("User is not a participant in this event.");
             }
         }
 
@@ -131,7 +166,7 @@ namespace EventAPI.Controllers
 
         [Authorize]
         [HttpPatch("{id}")]
-        public async Task<ActionResult<Event>> UpdateEvent(int id, [FromBody] EventUpdateDTO updatedEvent)
+        public async Task<ActionResult<EventUpdateDTO>> UpdateEvent(int id, [FromBody] EventUpdateDTO updatedEvent)
         {
             var userId = _jwtContext.UserId;
             if (updatedEvent == null || updatedEvent.Id != id)
@@ -140,7 +175,8 @@ namespace EventAPI.Controllers
             }
             try
             {
-                var result = await _eventService.Update(updatedEvent, userId);
+                var updatedResult = await _eventService.Update(updatedEvent, userId);
+                var result = updatedEvent.Adapt<EventGetDTO>();
                 return Ok(result);
             }
             catch (KeyNotFoundException)

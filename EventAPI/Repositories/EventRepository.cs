@@ -31,6 +31,20 @@ namespace EventAPI.Repositories
                    ?? throw new KeyNotFoundException($"Event with ID {id} not found.");
         }
 
+        public async Task<Event> GetEventWithParticipants(int eventId)
+        {
+            var participants = await _context.Events
+                .Include(e => e.Participants)
+                .FirstOrDefaultAsync(e => e.Id == eventId);
+            return participants;
+        }
+
+        public async Task<User> GetUserById(Guid userId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            return user;
+        }
+
         public async Task<Event> Create(Event newEvent)
         {
 

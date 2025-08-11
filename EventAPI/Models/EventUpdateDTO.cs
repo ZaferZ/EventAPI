@@ -11,7 +11,7 @@
         public DateTime EndDate { get; set; }
         public string Location { get; set; } = string.Empty;
         public int Capacity { get; set; }
-        public List<Guid>? ParticipantIds { get; set; }
+        public List<UserDTO>? Participants { get; set; }
         public EventStatus Status { get; set; } = EventStatus.Scheduled;
     }
 }

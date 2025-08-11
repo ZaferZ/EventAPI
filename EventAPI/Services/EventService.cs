@@ -48,26 +48,45 @@ namespace EventAPI.Services
 
         public async Task<Event> AddParticipant(int eventId, Guid userId)
         {
-            var eventEntity = await _eventRepository.GetById(eventId);
+
+            var eventEntity = await _eventRepository.GetEventWithParticipants(eventId);
             if (eventEntity == null)
-            {
-                throw new KeyNotFoundException($"Event with ID {eventId} not found.");
-            }
-            if (eventEntity.ParticipantIds == null)
-            {
-                eventEntity.ParticipantIds = new List<Guid>();
-            }
-            if (!eventEntity.ParticipantIds.Contains(userId))
-            {
-                eventEntity.ParticipantIds.Add(userId);
-                return await _eventRepository.Update(eventEntity);
-            }
-            else
-            {
-                throw new InvalidOperationException("User is already a participant in this event.");
-            }
+                throw new Exception("Event not found.");
+
+            var user = await _eventRepository.GetUserById(userId);
+
+            if (user == null)
+                throw new Exception("User not found.");
+
+            if (eventEntity.Participants.Any(p => p.Id == userId))
+                throw new Exception("User is already a participant.");
+
+            eventEntity.Participants.Add(user);
+            var updatedEvent=  await _eventRepository.Update(eventEntity);
+ 
+
+            return updatedEvent;
+
         }
 
+        public async Task<Event> RemoveParticipant(int eventId, Guid userId)
+        {
+           var eventEntity = await _eventRepository.GetEventWithParticipants(eventId);
+            if (eventEntity == null)
+                throw new Exception("Event not found.");
+
+            var user = await _eventRepository.GetUserById(userId);
+
+            if (user == null)
+                throw new Exception("User not found.");
+
+            if (!eventEntity.Participants.Any(p => p.Id == userId))
+                throw new Exception("User is not a participant.");
+
+            eventEntity.Participants.Remove(user);
+            return await _eventRepository.Update(eventEntity);
+
+        }
         public async Task<Event> Update(EventUpdateDTO newEvent, Guid userId)
         {
             TypeAdapterConfig<EventUpdateDTO, Event>.NewConfig()
