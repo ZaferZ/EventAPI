@@ -46,6 +46,28 @@ namespace EventAPI.Services
             return await _eventRepository.Create(eventEntity);
         }
 
+        public async Task<Event> AddParticipant(int eventId, Guid userId)
+        {
+            var eventEntity = await _eventRepository.GetById(eventId);
+            if (eventEntity == null)
+            {
+                throw new KeyNotFoundException($"Event with ID {eventId} not found.");
+            }
+            if (eventEntity.ParticipantIds == null)
+            {
+                eventEntity.ParticipantIds = new List<Guid>();
+            }
+            if (!eventEntity.ParticipantIds.Contains(userId))
+            {
+                eventEntity.ParticipantIds.Add(userId);
+                return await _eventRepository.Update(eventEntity);
+            }
+            else
+            {
+                throw new InvalidOperationException("User is already a participant in this event.");
+            }
+        }
+
         public async Task<Event> Update(EventUpdateDTO newEvent, Guid userId)
         {
             TypeAdapterConfig<EventUpdateDTO, Event>.NewConfig()

@@ -89,6 +89,27 @@ namespace EventAPI.Controllers
                 return NotFound($"Event with ID {id} not found.");
             }
         }
+        public async Task<ActionResult<EventGetDTO>> AddParticipcant(int id, Guid participantId)
+        {
+            var userId = _jwtContext.UserId;
+            if (participantId == Guid.Empty)
+            {
+                return BadRequest("Participant ID is invalid.");
+            }
+            try
+            {
+                var eventEntity = await _eventService.AddParticipant(id, participantId);
+                if (eventEntity == null)
+                {
+                    return NotFound($"Event with ID {id} not found.");
+                }
+                return Ok(eventEntity);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound($"Event with ID {id} not found.");
+            }
+        }
 
         [Authorize]
         [HttpPost]
