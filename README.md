@@ -126,7 +126,7 @@ curl -X GET https://api.example.com/api/event/42   -H "Authorization: Bearer YOU
 ---
 
 ### 5. Add Participant to Event *(Authenticated)*  
-**`PATCH /api/event/{id}/{participantId}`**  
+**`PATCH /api/event/add/{id}/{participantId}`**  
 
 #### 📌 Description  
 Adds a participant to the event. 
@@ -140,12 +140,32 @@ Participants can be added to event only by the admin and the owner of the event.
 
 #### 🔹 Example curl  
 ```bash
-curl -X PATCH https://api.example.com/api/event/42/PARTICIPANT_GUID   -H "Authorization: Bearer YOUR_JWT_TOKEN"
+curl -X PATCH https://api.example.com/api/event/add/42/PARTICIPANT_GUID   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 ---
 
-### 6. Create Event *(Authenticated)*  
+### 6. Remove Participant to Event *(Authenticated)*  
+**`PATCH /api/event/remove/{id}/{participantId}`**  
+
+#### 📌 Description  
+Removes a participant to the event. 
+Participants can be removed from event only by the admin and the owner of the event.
+
+#### 🔹 Path Parameters  
+| Name         | Type | Required | Description |
+|--------------|------|----------|-------------|
+| id           | int  | Yes      | Event ID |
+| participantId| GUID | Yes      | Participant's user ID |
+
+#### 🔹 Example curl  
+```bash
+curl -X PATCH https://api.example.com/api/event/remove/42/PARTICIPANT_GUID   -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+---
+
+### 7. Create Event *(Authenticated)*  
 **`POST /api/event`**  
 
 #### 📌 Description  
@@ -184,7 +204,7 @@ curl -X POST https://api.example.com/api/event   -H "Authorization: Bearer YOUR_
 
 ---
 
-### 7. Update Event *(Authenticated)*  
+### 8. Update Event *(Authenticated)*  
 **`PATCH /api/event/{id}`**  
 
 #### 📌 Description  
@@ -208,7 +228,6 @@ Updates an existing event. Only the event creator and an admin can update.
     "endDate": "DateTime",
     "location": "string",
     "capacity": "integer",
-    "participantIds": ["Guid", "Guid"],
     "status": "integer"
 }
 ]
@@ -233,7 +252,7 @@ curl -X PATCH https://api.example.com/api/event/42   -H "Authorization: Bearer Y
 
 ---
 
-### 8. Delete Event *(User/Admin)*  
+### 9. Delete Event *(User/Admin)*  
 **`DELETE /api/event/{id}`**  
 
 
