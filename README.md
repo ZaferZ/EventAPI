@@ -1,8 +1,7 @@
-[EventAPI_README.md](https://github.com/user-attachments/files/21728354/EventAPI_README.md)
 # 📅 Event API Documentation
 
 ## Overview
-The **Event API** allows authenticated users to create, manage, and participate in events. It also provides admin-level endpoints for managing events across all users.
+The **Event API** allows authenticated users to create, manage, and participate in events. It is a part of a EVEN
 
 **Base URL:**
 ```
@@ -32,14 +31,16 @@ No parameters.
 ```json
 [
   {
-    "id": "integer",
     "title": "string",
     "description": "string",
+    "ownerId": "Guid",
+    "hobbyId": "integer",
+    "startDate": "DateTime",
+    "endDate": "DateTime",
     "location": "string",
-    "capacity": "integer",
-    "startDate": "string (ISO 8601)",
-    "endDate": "string (ISO 8601)",
-    "hobbyId": "integer"
+    "capacity": integer,
+    "participantIds": List<Guid>,
+        "status": integer
   }
 ]
 ```
@@ -68,11 +69,18 @@ Retrieves all events created by a specific user.
 #### 🔹 Response Example  
 ```json
 [
-  {
-    "id": 42,
-    "title": "Hiking Trip",
-    "description": "Exploring the mountains"
-  }
+ {
+        "title": "Painting Workshop",
+        "description": "Learn to paint with watercolors.",
+        "ownerId": "7e61f925-b7d6-4e69-bbc2-a6695e2e424f",
+        "hobbyId": 2,
+        "startDate": "2024-08-15T14:00:00",
+        "endDate": "2024-08-15T17:00:00",
+        "location": "Art Studio",
+        "capacity": 15,
+        "participantIds": null,
+        "status": 0
+    },
 ]
 ```
 
@@ -99,11 +107,11 @@ curl -X GET https://api.example.com/api/event/myevents   -H "Authorization: Bear
 
 ---
 
-### 4. Get Event by ID *(User/Admin)*  
+### 4. Get Event by ID *(Admin Only)*  
 **`GET /api/event/{id}`**  
 
 #### 📌 Description  
-Retrieves details of a single event.
+Retrieves details of a single event of the user int the params.
 
 #### 🔹 Path Parameters  
 | Name | Type | Required | Description |
@@ -121,7 +129,8 @@ curl -X GET https://api.example.com/api/event/42   -H "Authorization: Bearer YOU
 **`PATCH /api/event/{id}/{participantId}`**  
 
 #### 📌 Description  
-Adds a participant to the event.
+Adds a participant to the event. 
+Participants can be added to event only by the admin and the owner of the event.
 
 #### 🔹 Path Parameters  
 | Name         | Type | Required | Description |
@@ -145,17 +154,19 @@ Creates a new event for the authenticated user.
 #### 🔹 Authentication  
 - Any authenticated user
 
-#### 🔹 Request Body Schema  
+#### 🔹 Request Body Schema
 ```json
-{
-  "title": "string",
-  "description": "string",
-  "startDate": "string (ISO 8601)",
-  "endDate": "string (ISO 8601)",
-  "location": "string",
-  "capacity": "integer",
-  "hobbyId": "integer"
-}
+[
+    {
+    "title": "Hiking Trip",
+    "description": "Exploring the mountains",
+    "hobbyId": 1,
+    "startDate": "2026-12-21T17:14:30",
+    "endDate": "2026-12-22T17:14:30",
+    "location": "Mountain Park",
+    "capacity": 30
+    }
+]
 ```
 
 #### 🔹 Example curl  
@@ -163,11 +174,11 @@ Creates a new event for the authenticated user.
 curl -X POST https://api.example.com/api/event   -H "Authorization: Bearer YOUR_JWT_TOKEN"   -H "Content-Type: application/json"   -d '{
     "title": "Hiking Trip",
     "description": "Exploring the mountains",
+    "hobbyId": 1,
     "startDate": "2025-09-12T10:00:00Z",
     "endDate": "2025-09-12T18:00:00Z",
     "location": "Mountain Park",
     "capacity": 10,
-    "hobbyId": 3
   }'
 ```
 
@@ -177,7 +188,7 @@ curl -X POST https://api.example.com/api/event   -H "Authorization: Bearer YOUR_
 **`PATCH /api/event/{id}`**  
 
 #### 📌 Description  
-Updates an existing event. Only the event creator can update.
+Updates an existing event. Only the event creator and an admin can update. 
 
 #### 🔹 Path Parameters  
 | Name | Type | Required | Description |
@@ -186,21 +197,37 @@ Updates an existing event. Only the event creator can update.
 
 #### 🔹 Request Body Schema  
 ```json
-{
-  "id": "integer",
-  "title": "string",
-  "description": "string",
-  "capacity": "integer"
+[
+  {
+    "id":"integer",
+    "title": "string",
+    "description": "string",
+    "ownerId": "Guid",
+    "hobbyId": "integer",
+    "startDate": "DateTime",
+    "endDate": "DateTime",
+    "location": "string",
+    "capacity": "integer",
+    "participantIds": ["Guid", "Guid"],
+    "status": "integer"
 }
+]
 ```
 
 #### 🔹 Example curl  
 ```bash
 curl -X PATCH https://api.example.com/api/event/42   -H "Authorization: Bearer YOUR_JWT_TOKEN"   -H "Content-Type: application/json"   -d '{
-    "id": 42,
-    "title": "Updated Hiking Trip",
-    "description": "New route planned",
-    "capacity": 15
+    "id":23,
+    "title": ""Hiking Trip",
+    "description": "Exploring the mountains",
+    "ownerId": "7E61F925-B7D6-4E69-BBC2-A6695E2E424F",
+    "hobbyId": 2,
+    "startDate": "2026-12-21T17:14:30",
+    "endDate": "2026-12-22T17:14:30",
+    "location": "Mountain Park",
+    "capacity": 10,
+    "participantIds": ["7E61F925-B7D6-4E69-BBC2-A6695E2E424F"],
+    "status": 3
   }'
 ```
 
@@ -209,38 +236,18 @@ curl -X PATCH https://api.example.com/api/event/42   -H "Authorization: Bearer Y
 ### 8. Delete Event *(User/Admin)*  
 **`DELETE /api/event/{id}`**  
 
+
 #### 📌 Description  
 Deletes an event. Only the creator or an admin can delete.
+
+#### 🔹 Path Parameters  
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| id   | int  | Yes      | Event ID |
 
 #### 🔹 Example curl  
 ```bash
 curl -X DELETE https://api.example.com/api/event/42   -H "Authorization: Bearer YOUR_JWT_TOKEN"
-```
-
----
-
-### 9. Authentication Test *(Authenticated)*  
-**`GET /api/event/auth-test`**  
-
-#### 📌 Description  
-Returns a success message if the user is authenticated.
-
-#### 🔹 Example curl  
-```bash
-curl -X GET https://api.example.com/api/event/auth-test   -H "Authorization: Bearer YOUR_JWT_TOKEN"
-```
-
----
-
-### 10. Admin Authentication Test *(Admin Only)*  
-**`GET /api/event/auth-admin`**  
-
-#### 📌 Description  
-Returns a success message if the user is an admin.
-
-#### 🔹 Example curl  
-```bash
-curl -X GET https://api.example.com/api/event/auth-admin   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 ---
