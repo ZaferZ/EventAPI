@@ -1,4 +1,5 @@
 ﻿
+using EventAPI.Models.DTOs;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 

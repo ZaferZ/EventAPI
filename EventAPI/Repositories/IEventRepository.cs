@@ -1,4 +1,5 @@
 ﻿using EventAPI.Models;
+using EventAPI.Models.DTOs;
 
 namespace EventAPI.Repositories
 {

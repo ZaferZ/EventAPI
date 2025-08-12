@@ -1,15 +1,13 @@
-﻿using EventAPI.Models;
+﻿using EventAPI.Models.DTOs;
 using FluentValidation;
 
 namespace EventAPI.Validators
 {
-    public class EventUpdateValitdator : AbstractValidator<EventUpdateDTO>
+    public class EventUpdateValitdator : AbstractValidator<UpdateEventDto>
     {
         public EventUpdateValitdator()
         {
-            RuleFor(e => e.Id)
-                .NotEmpty().WithMessage("Event ID is required.")
-                .GreaterThan(0).WithMessage("Event ID must be a positive integer.");
+
             RuleFor(e => e.Title)
                 .NotEmpty().WithMessage("Event name is required.")
                 .MaximumLength(100).WithMessage("Event name cannot exceed 100 characters.");

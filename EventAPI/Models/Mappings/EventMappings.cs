@@ -7,7 +7,7 @@ namespace EventAPI.Models.Mappings
     {
         public void Register(TypeAdapterConfig config)
         {
-            //Entity to DTO mappings
+            //Entity to EventDTO mappings
             config.NewConfig<Event, EventDto>()
                 .Map(dest => dest.Participants, src => src.Participants.Select(p => p.Id).ToList())
                 .Map(dest => dest.OwnerId, src => src.OwnerId)

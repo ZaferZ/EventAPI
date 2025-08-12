@@ -5,12 +5,13 @@ using EventAPI.Services;
 using EventAPI.Validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Mapster;
+using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using System.Reflection;
+
 
 
 
@@ -18,7 +19,12 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Scan the assembly for all IRegister mapping configs
+TypeAdapterConfig.GlobalSettings.Scan(Assembly.GetExecutingAssembly());
 
+// Add Mapster mapper service
+builder.Services.AddSingleton(TypeAdapterConfig.GlobalSettings);
+//builder.Services.AddScoped<IMapper, ServiceMapper>();
 
 // Add services to the container.
 

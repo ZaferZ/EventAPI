@@ -1,5 +1,6 @@
 ﻿using EventAPI.Data;
 using EventAPI.Models;
+using EventAPI.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventAPI.Repositories
@@ -7,14 +8,17 @@ namespace EventAPI.Repositories
     public class EventRepository : IEventRepository
     {
         private readonly EventDbContext _context;
-        public EventRepository(EventDbContext context) 
+        public EventRepository(EventDbContext context)
         {
-           _context = context;
+            _context = context;
         }
-        
+
         public async Task<IEnumerable<Event>> GetAll()
         {
-            return await _context.Events.ToListAsync();
+            var result = await _context.Events
+                .Include(e => e.Participants)
+                .ToListAsync();
+            return result;
         }
 
         public async Task<IEnumerable<Event>> GetByUserId(Guid userId)
@@ -41,7 +45,18 @@ namespace EventAPI.Repositories
 
         public async Task<User> GetUserById(Guid userId)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+           
+            var user = await _context.Users
+            .Where(u => u.Id == userId)
+             .Select(u => new User
+             {
+                 Id = u.Id,
+                 Username = u.Username,
+                 FirstName = u.FirstName,
+                 LastName = u.LastName,
+                 Email = u.Email
+             })
+                .FirstOrDefaultAsync();
             return user;
         }
 
@@ -66,6 +81,6 @@ namespace EventAPI.Repositories
             await _context.SaveChangesAsync();
         }
 
-      
+
     }
 }
