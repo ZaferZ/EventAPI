@@ -21,7 +21,6 @@ namespace EventAPI.Models
             [Required]
             public string Email { get; set; } = string.Empty;
 
-            public string PasswordHash { get; set; } = string.Empty;
 
              [JsonIgnore]
              public ICollection<Event>? Events { get; set; } = new List<Event>();
