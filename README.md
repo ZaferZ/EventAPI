@@ -38,9 +38,9 @@ No parameters.
     "startDate": "DateTime",
     "endDate": "DateTime",
     "location": "string",
-    "capacity": integer,
-    "participantIds": List<Guid>,
-        "status": integer
+    "capacity": "integer",
+    "participantIds": "List<Guid>",
+        "status": "integer"
   }
 ]
 ```
