@@ -2,6 +2,7 @@
 using EventAPI.Models;
 using EventAPI.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace EventAPI.Repositories
 {
@@ -25,23 +26,21 @@ namespace EventAPI.Repositories
         {
             var events = await _context.Events
                 .Where(e => e.CreatedBy == userId || e.OwnerId == userId)
+                .Include(e =>e.Participants)
                 .ToListAsync();
             return events;
         }
 
         public async Task<Event> GetById(int id)
         {
-            return await _context.Events.FindAsync(id)
+            var events = await _context.Events
+               .Include(e => e.Participants)
+               .FirstOrDefaultAsync(e => e.Id == id);
+
+            return events
                    ?? throw new KeyNotFoundException($"Event with ID {id} not found.");
         }
 
-        public async Task<Event> GetEventWithParticipants(int eventId)
-        {
-            var participants = await _context.Events
-                .Include(e => e.Participants)
-                .FirstOrDefaultAsync(e => e.Id == eventId);
-            return participants;
-        }
 
         public async Task<User> GetUserById(Guid userId)
         {
@@ -60,24 +59,24 @@ namespace EventAPI.Repositories
             return user;
         }
 
-        public async Task<Event> Create(Event newEvent)
+        public async Task<Event> Create(Event ev)
         {
 
-            _context.Events.Add(newEvent);
+            _context.Events.Add(ev);
             await _context.SaveChangesAsync();
-            return newEvent;
+            return ev;
         }
 
-        public async Task<Event> Update(Event newEvent)
+        public async Task<Event> Update(Event ev)
         {
-            _context.Events.Update(newEvent);
+            _context.Events.Update(ev);
             await _context.SaveChangesAsync();
-            return newEvent;
+            return ev;
         }
 
-        public async Task Delete(Event newEvent)
+        public async Task Delete(Event ev)
         {
-            _context.Events.Remove(newEvent);
+            _context.Events.Remove(ev);
             await _context.SaveChangesAsync();
         }
 

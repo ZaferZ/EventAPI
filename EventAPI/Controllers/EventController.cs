@@ -56,8 +56,6 @@ namespace EventAPI.Controllers
             var userId = _jwtContext.UserId;
             try
             {
-
-
                 var response = await _eventService.GetByUserId(userId);
                 if (response != null && response.Any())
                     return Ok(response);
@@ -187,12 +185,8 @@ namespace EventAPI.Controllers
             
             try
             {
-                Event eventToDelete = await _eventService.GetById(id);
-                if (eventToDelete.CreatedBy != _jwtContext.UserId && !_jwtContext.Role.Equals("admin", StringComparison.OrdinalIgnoreCase))
-                {
-                    return Forbid("You do not have permission to delete this event.");
-                }
-                await _eventService.Delete(eventToDelete);
+            
+                await _eventService.Delete(id);
                 return NoContent();
             }
             catch (KeyNotFoundException)

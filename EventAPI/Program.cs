@@ -3,6 +3,7 @@ using EventAPI.Helpers;
 using EventAPI.Repositories;
 using EventAPI.Services;
 using EventAPI.Validators;
+using EventAPI.Middleware;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Mapster;
@@ -19,6 +20,7 @@ using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 // Scan the assembly for all IRegister mapping configs
 TypeAdapterConfig.GlobalSettings.Scan(Assembly.GetExecutingAssembly());
 
@@ -28,7 +30,12 @@ builder.Services.AddSingleton(TypeAdapterConfig.GlobalSettings);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers((options =>
+{
+    options.Filters.Add<ValidationFilter>();
+}));
+
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -85,12 +92,17 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+app.UseGlobalExceptionHandling();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Use the global exception middleware
+
 
 app.UseHttpsRedirection();
 
