@@ -26,12 +26,15 @@ namespace EventAPI.Models.Mappings
 
             //Update DTO to Entity mappings
             config.NewConfig<UpdateEventDto, Event>()
-                .Map(dest => dest.ModifiedAt, src => DateTime.UtcNow)
-                .Map(dest => dest.ModifiedBy, src => _jwtContext.UserId)
-                .Ignore(dest => dest.Id)
-                .Ignore(dest => dest.CreatedAt)
-                .Ignore(dest => dest.CreatedBy);
- 
+                .IgnoreNullValues(true);
+
+
+
+            //Entity to EventDTO mappings
+            config.NewConfig<Event, UpdateEventDto>()
+                .Map(dest => dest.OwnerId, src => src.OwnerId)
+                .Map(dest => dest.HobbyId, src => src.HobbyId);
+
         }
     }
 }

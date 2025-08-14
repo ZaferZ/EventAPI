@@ -162,14 +162,9 @@ namespace EventAPI.Controllers
         public async Task<ActionResult<UpdateEventDto>> UpdateEvent(int id, [FromBody] UpdateEventDto updatedEvent)
         {
             var userId = _jwtContext.UserId;
-            if (updatedEvent == null )
-            {
-                return BadRequest("Event data is invalid.");
-            }
             try
             {
-                var updatedResult = await _eventService.Update(updatedEvent, userId);
-                var result = updatedEvent.Adapt<EventDto>();
+                var result = await _eventService.Update(updatedEvent, userId, id);
                 return Ok(result);
             }
             catch (KeyNotFoundException)

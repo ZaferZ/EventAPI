@@ -81,7 +81,7 @@ namespace EventAPI.Services
         /// A task representing the asynchronous operation.  
         /// The task result contains the updated <see cref="EventDto"/>.
         /// </returns>
-        Task<EventDto> Update(UpdateEventDto newEvent, Guid userId);
+        Task<EventDto> Update(UpdateEventDto newEvent, Guid userId, int eventId);
 
         /// <summary>
         /// Deletes an event if the current user is allowed.

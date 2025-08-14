@@ -1,4 +1,5 @@
-﻿using EventAPI.Helpers;
+﻿using EventAPI.Exceptions;
+using EventAPI.Helpers;
 using EventAPI.Models;
 using EventAPI.Models.DTOs;
 using EventAPI.Repositories;
@@ -57,15 +58,15 @@ namespace EventAPI.Services
 
             var eventEntity = await _eventRepository.GetById(eventId);
             if (eventEntity == null)
-                throw new Exception("Event not found.");
+                throw new NotFoundException("Event not found.");
 
             var user = await _eventRepository.GetUserById(userId);
 
             if (user == null)
-                throw new Exception("User not found.");
+                throw new NotFoundException("User not found.");
 
             if (eventEntity.Participants.Any(p => p.Id == userId))
-                throw new Exception("User is already a participant.");
+                throw new ConflictException("User is already a participant.");
 
             eventEntity.Participants.Add(user);
             var updatedEvent = await _eventRepository.Update(eventEntity);
@@ -81,19 +82,19 @@ namespace EventAPI.Services
         {
             var eventEntity = await _eventRepository.GetById(eventId);
             if (eventEntity == null)
-                throw new Exception("Event not found.");
+                throw new NotFoundException("Event not found.");
 
             var user = await _eventRepository.GetUserById(userId);
 
             if (user == null)
-                throw new Exception("User not found.");
+                throw new NotFoundException("User not found.");
 
             if (!eventEntity.Participants.Any(p => p.Id == userId))
-                throw new Exception("User is not a participant.");
+                throw new ConflictException("User is not a participant.");
             user = eventEntity.Participants.FirstOrDefault(p => p.Id == userId);
             if (!eventEntity.Participants.Remove(user))
             {
-                throw new Exception("User not found.");
+                throw new NotFoundException("User not found.");
             }
 
             var updatedEvent = await _eventRepository.Update(eventEntity);
@@ -103,16 +104,19 @@ namespace EventAPI.Services
 
         }
 
-        public async Task<EventDto> Update(UpdateEventDto newEvent, Guid userId)
+        public async Task<EventDto> Update(UpdateEventDto newEvent, Guid userId, int eventId)
         {
-            TypeAdapterConfig<UpdateEventDto, Event>.NewConfig()
-                 .Map(d => d.ModifiedAt, s => DateTime.UtcNow)
-                 .Map(d => d.ModifiedBy, s => userId)   
-                 .Map(d => d.CreatedBy, s => userId);  
-            
-            
-            var eventEntity = newEvent.Adapt<Event>();
-            var updatedEvent = await _eventRepository.Update(eventEntity);
+
+            var existingEvent = await _eventRepository.GetById(eventId);
+
+            if (existingEvent == null)
+                throw new NotFoundException($"Event {eventId} was not found.");
+
+
+            newEvent.Adapt(existingEvent);
+            existingEvent.ModifiedAt = DateTime.UtcNow;
+            existingEvent.ModifiedBy = userId;
+            var updatedEvent = await _eventRepository.Update(existingEvent);
             var response = updatedEvent.Adapt<EventDto>();
 
             return response;
