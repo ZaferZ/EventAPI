@@ -18,6 +18,8 @@ namespace EventAPI.Repositories
         {
             var result = await _context.Events
                 .Include(e => e.Participants)
+                .Include(e => e.Comments)
+                .Include(e => e.Tasks)
                 .ToListAsync();
             return result;
         }
@@ -27,6 +29,8 @@ namespace EventAPI.Repositories
             var events = await _context.Events
                 .Where(e => e.CreatedBy == userId || e.OwnerId == userId)
                 .Include(e =>e.Participants)
+                .Include(e => e.Comments)
+                .Include(e => e.Tasks)
                 .ToListAsync();
             return events;
         }
@@ -35,28 +39,12 @@ namespace EventAPI.Repositories
         {
             var events = await _context.Events
                .Include(e => e.Participants)
+               .Include(e => e.Comments)
+                .Include(e => e.Tasks)
                .FirstOrDefaultAsync(e => e.Id == id);
 
             return events
                    ?? throw new KeyNotFoundException($"Event with ID {id} not found.");
-        }
-
-
-        public async Task<User> GetUserById(Guid userId)
-        {
-           
-            var user = await _context.Users
-            .Where(u => u.Id == userId)
-             .Select(u => new User
-             {
-                 Id = u.Id,
-                 Username = u.Username,
-                 FirstName = u.FirstName,
-                 LastName = u.LastName,
-                 Email = u.Email
-             })
-                .FirstOrDefaultAsync();
-            return user;
         }
 
         public async Task<Event> Create(Event ev)

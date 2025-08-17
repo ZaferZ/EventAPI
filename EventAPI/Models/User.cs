@@ -24,6 +24,8 @@ namespace EventAPI.Models
 
              [JsonIgnore]
              public ICollection<Event>? Events { get; set; } = new List<Event>();
-        }
+        [JsonIgnore]
+        public ICollection<TaskEntity> Tasks { get; set; } = new List<TaskEntity>();
+    }
     }
 

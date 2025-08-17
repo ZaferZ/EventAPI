@@ -4,6 +4,7 @@ using EventAPI.Models;
 using EventAPI.Models.DTOs;
 using EventAPI.Repositories;
 using Mapster;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
 namespace EventAPI.Services
@@ -12,6 +13,7 @@ namespace EventAPI.Services
     {
         private readonly IJwtContext _jwtContext;
         private readonly IEventRepository _eventRepository;
+        private readonly IUserRepository _userRepository;
         public EventService(IEventRepository eventRepository)
         {
             _jwtContext = new JwtContext(new HttpContextAccessor());
@@ -19,6 +21,7 @@ namespace EventAPI.Services
         }
         public async Task<IEnumerable<EventDto>> GetAll()
         {
+  
             var events = await _eventRepository.GetAll();
             var response = events.Adapt<List<EventDto>>();
             return response;
@@ -60,7 +63,7 @@ namespace EventAPI.Services
             if (eventEntity == null)
                 throw new NotFoundException("Event not found.");
 
-            var user = await _eventRepository.GetUserById(userId);
+            var user = await _userRepository.GetUserById(userId);
 
             if (user == null)
                 throw new NotFoundException("User not found.");
@@ -84,7 +87,7 @@ namespace EventAPI.Services
             if (eventEntity == null)
                 throw new NotFoundException("Event not found.");
 
-            var user = await _eventRepository.GetUserById(userId);
+            var user = await _userRepository.GetUserById(userId);
 
             if (user == null)
                 throw new NotFoundException("User not found.");

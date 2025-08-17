@@ -10,7 +10,11 @@
         public DateTime EndDate { get; set; }
         public string Location { get; set; } = string.Empty;
         public int Capacity { get; set; }
-        public List<UserDto> Participants { get; set; } = new();
-        public EventStatus Status { get; set; } = EventStatus.Scheduled;
+        public List<ParticipantDto> Participants { get; set; } = new();
+
+        public List<TaskDto> Tasks { get; set; } = new();
+
+        public List<CommentDto> Comments { get; set; } = new();
+        public string Status { get; set; } = string.Empty;
     }
 }

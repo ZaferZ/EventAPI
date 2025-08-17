@@ -35,15 +35,7 @@ namespace EventAPI.Repositories
         /// <exception cref="KeyNotFoundException">Thrown when the event is not found.</exception>
         Task<Event> GetById(int id);
 
-        /// <summary>
-        /// Retrieves a user by their ID.
-        /// </summary>
-        /// <param name="userId">The unique identifier of the user.</param>
-        /// <returns>
-        /// A task representing the asynchronous operation.  
-        /// The task result contains the <see cref="User"/> if found; otherwise <c>null</c>.
-        /// </returns>
-        Task<User> GetUserById(Guid userId);
+
 
         /// <summary>
         /// Creates a new event.

@@ -47,6 +47,12 @@ namespace EventAPI.Models
 
         public ICollection<User>? Participants { get; set; } = new List<User>();
 
+        public ICollection<TaskEntity>? Tasks { get; set; } = new List<TaskEntity>();
+
+        public ICollection<Comment>? Comments { get; set; } = new List<Comment>();
+
+
+
 
     }
 }
