@@ -1,9 +1,9 @@
-﻿using EventAPI.Models;
+﻿using EventAPI.Models.DTOs;
 using FluentValidation;
 
 namespace EventAPI.Validators
 {
-    public class EventCreateValidator:AbstractValidator<EventCreateDTO>
+    public class EventCreateValidator:AbstractValidator<CreateEventDto>
     {
         public EventCreateValidator()
         {

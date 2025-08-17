@@ -1,0 +1,40 @@
+﻿using EventAPI.Helpers;
+using EventAPI.Models.DTOs;
+using Mapster;
+
+namespace EventAPI.Models.Mappings
+{
+    public class EventMappings:IRegister
+    {
+        JwtContext _jwtContext;
+        public void Register(TypeAdapterConfig config)
+        {
+            //Entity to EventDTO mappings
+            config.NewConfig<Event, EventDto>()
+                .Map(dest => dest.Participants, src => src.Participants.Select(p => p.Adapt<UserDto>()).ToList())
+                .Map(dest => dest.OwnerId, src => src.OwnerId)
+                .Map(dest => dest.HobbyId, src => src.HobbyId);
+
+            //Create DTO to Entity mappings
+            config.NewConfig<CreateEventDto, Event>()
+                .Ignore(dest => dest.Id)
+                .Ignore(dest => dest.CreatedAt)
+                .Ignore(dest => dest.ModifiedAt)
+                .Ignore(dest => dest.CreatedBy)
+                .Ignore(dest => dest.ModifiedBy)
+                .Ignore(dest => dest.Status);
+
+            //Update DTO to Entity mappings
+            config.NewConfig<UpdateEventDto, Event>()
+                .IgnoreNullValues(true);
+
+
+
+            //Entity to EventDTO mappings
+            config.NewConfig<Event, UpdateEventDto>()
+                .Map(dest => dest.OwnerId, src => src.OwnerId)
+                .Map(dest => dest.HobbyId, src => src.HobbyId);
+
+        }
+    }
+}

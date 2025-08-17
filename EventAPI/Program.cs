@@ -3,14 +3,16 @@ using EventAPI.Helpers;
 using EventAPI.Repositories;
 using EventAPI.Services;
 using EventAPI.Validators;
+using EventAPI.Middleware;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Mapster;
+using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using System.Reflection;
+
 
 
 
@@ -19,10 +21,21 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 
+// Scan the assembly for all IRegister mapping configs
+TypeAdapterConfig.GlobalSettings.Scan(Assembly.GetExecutingAssembly());
+
+// Add Mapster mapper service
+builder.Services.AddSingleton(TypeAdapterConfig.GlobalSettings);
+//builder.Services.AddScoped<IMapper, ServiceMapper>();
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers((options =>
+{
+    options.Filters.Add<ValidationFilter>();
+}));
+
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -63,13 +76,13 @@ builder.Services.AddAuthentication(x =>
                   ValidateIssuerSigningKey = false,
                   IssuerSigningKey = new SymmetricSecurityKey(key),
 
-                  ValidateIssuer = true,
+                  ValidateIssuer = false,
                   ValidIssuer = issuer,
 
                   ValidateAudience = false,
                   ValidAudiences = audience,
 
-                  ValidateLifetime = true,
+                  ValidateLifetime = false,
               };
 
           });
@@ -79,12 +92,17 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+app.UseGlobalExceptionHandling();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Use the global exception middleware
+
 
 app.UseHttpsRedirection();
 

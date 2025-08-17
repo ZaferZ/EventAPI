@@ -2,6 +2,7 @@
 using Azure;
 using EventAPI.Helpers;
 using EventAPI.Models;
+using EventAPI.Models.DTOs;
 using EventAPI.Services;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
@@ -25,7 +26,7 @@ namespace EventAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<EventGetDTO>>> GetAllEvents()
+        public async Task<ActionResult<IEnumerable<EventDto>>> GetAllEvents()
         {
             var response = await _eventService.GetAll();
 
@@ -34,7 +35,7 @@ namespace EventAPI.Controllers
 
         [Authorize(Roles = "admin")]
         [HttpGet("user/{id}")]
-        public async Task<ActionResult<IEnumerable<EventGetDTO>>> GetEventsByUserId(Guid id)
+        public async Task<ActionResult<IEnumerable<EventDto>>> GetEventsByUserId(Guid id)
         {
 
             try
@@ -50,17 +51,15 @@ namespace EventAPI.Controllers
 
         [Authorize(Roles = "user")]
         [HttpGet("myevents")]
-        public async Task<ActionResult<IEnumerable<EventGetDTO>>> GetLoggerEvents()
+        public async Task<ActionResult<IEnumerable<EventDto>>> GetLoggerEvents()
         {
             var userId = _jwtContext.UserId;
             try
             {
-
-            
-                    var response = await _eventService.GetByUserId(userId);
+                var response = await _eventService.GetByUserId(userId);
                 if (response != null && response.Any())
                     return Ok(response);
-                
+
                 return BadRequest("User ID is not valid.");
 
             }
@@ -72,7 +71,7 @@ namespace EventAPI.Controllers
 
         [Authorize(Roles = "user, admin")]
         [HttpGet("{id}")]
-        public async Task<ActionResult<EventGetDTO>> GetEventById(int id)
+        public async Task<ActionResult<EventDto>> GetEventById(int id)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out Guid userGuid))
@@ -91,8 +90,58 @@ namespace EventAPI.Controllers
         }
 
         [Authorize]
+        [HttpPatch("add/{id}/{participantId}")]
+        public async Task<ActionResult<UpdateEventDto>> AddParticipcant(int id, Guid participantId)
+        {
+            var userId = _jwtContext.UserId;
+            if (participantId == Guid.Empty)
+            {
+                return BadRequest("Participant ID is invalid.");
+            }
+            try
+            {
+                var eventEntity = await _eventService.AddParticipant(id, participantId);
+          
+                if (eventEntity == null)
+                {
+                    return NotFound($"Event with ID {id} not found.");
+                }
+                return Ok(eventEntity);
+            }
+            catch (Exception e)
+            {
+                return NotFound(e.Message); 
+            }
+        }
+
+        [Authorize]
+        [HttpPatch("remove/{id}/{participantId}")]
+        public async Task<ActionResult<EventDto>> RemoveParticipcant(int id, Guid participantId)
+        {
+            var userId = _jwtContext.UserId;
+            if (participantId == Guid.Empty)
+            {
+                return BadRequest("Participant ID is invalid.");
+            }
+            try
+            {
+                var eventEntity = await _eventService.RemoveParticipant(id, participantId);
+                if (eventEntity == null)
+                {
+                    return NotFound($"Event with ID {id} not found.");
+                }
+                return Ok(eventEntity);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+           
+        }
+
+        [Authorize]
         [HttpPost]
-        public async Task<ActionResult<EventGetDTO>> CreateEvent([FromBody] EventCreateDTO newEvent)
+        public async Task<ActionResult<EventDto>> CreateEvent([FromBody] CreateEventDto newEvent)
         {
             var userId = _jwtContext.UserId;
             if (!ModelState.IsValid)
@@ -105,21 +154,17 @@ namespace EventAPI.Controllers
             var createdEvent = await _eventService.Create(newEvent, userId);
 
 
-            return CreatedAtAction(nameof(GetEventById), new { id = createdEvent.Id }, createdEvent);
+            return createdEvent;
         }
 
         [Authorize]
         [HttpPatch("{id}")]
-        public async Task<ActionResult<Event>> UpdateEvent(int id, [FromBody] EventUpdateDTO updatedEvent)
+        public async Task<ActionResult<UpdateEventDto>> UpdateEvent(int id, [FromBody] UpdateEventDto updatedEvent)
         {
             var userId = _jwtContext.UserId;
-            if (updatedEvent == null || updatedEvent.Id != id)
-            {
-                return BadRequest("Event data is invalid.");
-            }
             try
             {
-                var result = await _eventService.Update(updatedEvent, userId);
+                var result = await _eventService.Update(updatedEvent, userId, id);
                 return Ok(result);
             }
             catch (KeyNotFoundException)
@@ -135,12 +180,8 @@ namespace EventAPI.Controllers
             
             try
             {
-                Event eventToDelete = await _eventService.GetById(id);
-                if (eventToDelete.CreatedBy != _jwtContext.UserId && !_jwtContext.Role.Equals("admin", StringComparison.OrdinalIgnoreCase))
-                {
-                    return Forbid("You do not have permission to delete this event.");
-                }
-                await _eventService.Delete(eventToDelete);
+            
+                await _eventService.Delete(id);
                 return NoContent();
             }
             catch (KeyNotFoundException)

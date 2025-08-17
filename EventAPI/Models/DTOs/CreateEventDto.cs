@@ -1,7 +1,7 @@
-﻿namespace EventAPI.Models
+﻿namespace EventAPI.Models.DTOs
 {
-    public class EventGetDTO
-    {   
+    public class CreateEventDto
+    {
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public Guid OwnerId { get; set; }
@@ -10,7 +10,6 @@
         public DateTime EndDate { get; set; }
         public string Location { get; set; } = string.Empty;
         public int Capacity { get; set; }
-        public List<Guid> ParticipantIds { get; set; } = new();
         public EventStatus Status { get; set; } = EventStatus.Scheduled;
     }
 }

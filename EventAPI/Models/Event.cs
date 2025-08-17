@@ -1,4 +1,5 @@
 ﻿
+using EventAPI.Models.DTOs;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -41,9 +42,10 @@ namespace EventAPI.Models
         public DateTime? ModifiedAt { get; set; }
         [ForeignKey("ModifiedBy")]
         public Guid? ModifiedBy { get; set; }
-        public ICollection<Guid>? ParticipantIds { get; set; } = new List<Guid>();
         [Required]
         public EventStatus Status { get; set; } = EventStatus.Scheduled;
+
+        public ICollection<User>? Participants { get; set; } = new List<User>();
 
 
     }
